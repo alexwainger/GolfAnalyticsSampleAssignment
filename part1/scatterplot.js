@@ -3,7 +3,9 @@
     var margin = { top: 30, left: 50, right: 30, bottom: 50},
     height = 420 - margin.top - margin.bottom,
     width = 780 - margin.left - margin.right,
-    radius = 7;
+    radius = 7,
+    yLabelPadding = 15,
+    tooltipPadding = 5;
 
     // Setup svg and translated g element
     var svg = d3.select("#chart")
@@ -63,7 +65,7 @@
 
         svg.append("text")
             .attr("x", -height / 2)
-            .attr("y", -margin.left + 15)
+            .attr("y", -margin.left + yLabelPadding)
             .attr("transform", "rotate(-90)")
             .text("Y Value");
 
@@ -88,8 +90,8 @@
             })
             .on("mousemove", function() {
                 tooltip
-                    .style("left", (d3.event.pageX + 10) + "px")     
-                    .style("top", (d3.event.pageY) + "px")
+                    .style("left", (d3.event.pageX + tooltipPadding) + "px")     
+                    .style("top", (d3.event.pageY + tooltipPadding) + "px")
             })
             .on("mouseout", function() {
                 tooltip.style("display", "none")
