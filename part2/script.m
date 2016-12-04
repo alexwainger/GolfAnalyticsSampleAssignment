@@ -105,7 +105,7 @@ function write_to_file(output_name, model, percentage)
     fprintf(fid, 'Putt Coefficient (c): %f (Estimate), %f (SE)\n', ...
             model.Coefficients{'OverallPuttingAvg__OfPutts_', {'Estimate', 'SE'}});
     fprintf(fid, 'R-Squared: %f\n', model.Rsquared.Ordinary);
-    fprintf(fid, 'Number of Data Points: %f', model.NumObservations);
+    fprintf(fid, 'Number of Data Points: %d', model.NumObservations);
     fprintf(fid, '\n\n--- Monte Carlo Output ---\nPercent <= 270: %f', percentage);
     
 end
