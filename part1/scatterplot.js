@@ -2,7 +2,7 @@
     // Constants
     var margin = { top: 30, left: 50, right: 30, bottom: 50},
     height = 420 - margin.top - margin.bottom,
-    width = 780 - margin.left - margin.right,
+    width = 700 - margin.left - margin.right,
     radius = 7,
     yLabelPadding = 15,
     tooltipPadding = 5;
