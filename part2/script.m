@@ -1,7 +1,8 @@
 %%% Golf Analytics Sample Assignment Part 2
 %%% Alex Wainger
 %% Constants
-file_name = 'round-2014-small.txt';
+input_name = 'round-2014-small.txt';
+output_name = 'results.txt';
 modelspec = 'RoundScore ~ GIRRank + OverallPuttingAvg__OfPutts_';
 mc_column_name = 'RoundScore';
 mc_iters = 10000;
@@ -9,17 +10,17 @@ mc_sample_size = 4;
 mc_threshold = 270;
 
 %% Read File
-
-T = file_to_table(file_name);
+T = file_to_table(input_name);
 
 %% Linear Regression
 model = linear_regression(T, modelspec);
-disp(model);
 
 %% Monte Carlo
 vector = transpose(table2array(T(:, mc_column_name)));
 percentage = monte_carlo(vector, mc_iters, mc_sample_size, mc_threshold);
-disp(percentage);
+
+%% Write Results To A File
+write_to_file(output_name, model, percentage);
 
 %% Functions
 
@@ -82,4 +83,29 @@ function percentage = monte_carlo(vector, iters, sample_size, threshold)
     % number of times less than or equal to threshold, divide by number of
     % trials
     percentage = sum(sum(samples, 2) <= threshold) / iters;
+
+end
+
+function write_to_file(output_name, model, percentage)
+% write_to_file writes the results of this script to a results.txt file
+
+% Input Vars
+% output_name - file to write to
+% model - linear regression model
+% percentage - monte carlo simulation result
+
+% Output Vars
+% None.
+
+    fid = fopen(output_name, 'w');
+    fprintf(fid, '--- Regression Output ---\nIntercept (a): %f (Estimate), %f (SE)\n', ...
+            model.Coefficients{'(Intercept)', {'Estimate', 'SE'}});
+    fprintf(fid, 'GIR Coefficient (b): %f (Estimate), %f (SE)\n', ...
+            model.Coefficients{'GIRRank', {'Estimate', 'SE'}});
+    fprintf(fid, 'Putt Coefficient (c): %f (Estimate), %f (SE)\n', ...
+            model.Coefficients{'OverallPuttingAvg__OfPutts_', {'Estimate', 'SE'}});
+    fprintf(fid, 'R-Squared: %f\n', model.Rsquared.Ordinary);
+    fprintf(fid, 'Number of Data Points: %f', model.NumObservations);
+    fprintf(fid, '\n\n--- Monte Carlo Output ---\nPercent <= 270: %f', percentage);
+    
 end
