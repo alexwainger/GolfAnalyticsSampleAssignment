@@ -6,4 +6,5 @@ R-Squared: 0.500286
 Number of Data Points: 1440
 
 --- Monte Carlo Output ---
-Percent <= 270: 0.033800
+Estimate: 0.033800
+Standard Error: 0.001807

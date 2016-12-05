@@ -17,10 +17,10 @@ model = linear_regression(T, modelspec);
 
 %% Monte Carlo
 vector = transpose(table2array(T(:, mc_column_name)));
-percentage = monte_carlo(vector, mc_iters, mc_sample_size, mc_threshold);
+[percentage, error] = monte_carlo(vector, mc_iters, mc_sample_size, mc_threshold);
 
 %% Write Results To A File
-write_to_file(output_name, model, percentage);
+write_to_file(output_name, model, percentage, error);
 
 %% Functions
 
@@ -54,7 +54,7 @@ function model = linear_regression(table, spec)
 
 end
 
-function percentage = monte_carlo(vector, iters, sample_size, threshold)
+function [percentage, error] = monte_carlo(vector, iters, sample_size, threshold)
 % monte_carlo runs a monte carlo simulation using "iters" number of
 % iterations, taking a random sample of size "sample_size", and returning
 % the percentage of the random samples that are less than or equal to
@@ -79,14 +79,21 @@ function percentage = monte_carlo(vector, iters, sample_size, threshold)
     % Take samples from observed data vector
     samples = vector(random_mat);
     
-    % sum samples for each iteration, compare to threshold, sum to get
+    % Compare each of the sample totals to the threshold, sum to get
     % number of times less than or equal to threshold, divide by number of
     % trials
-    percentage = sum(sum(samples, 2) <= threshold) / iters;
-
+    percentage = sum(sum(samples, 2)<= threshold) / iters;
+    
+    % The number of successes, N, is a binomial RV with parameters n =
+    % iters, and p = percentage. The variance of the estimator p_hat, is
+    % then the variance of N (np(1-p) because it's binomial) divided by 
+    % iters^2 (once to get the percentage from the total, once to reflect 
+    % the fact that it is a sample variance). The standard error can be 
+    % found by taking the square root of this value.
+    error = sqrt((percentage * (1 - percentage)) / iters);
 end
 
-function write_to_file(output_name, model, percentage)
+function write_to_file(output_name, model, mc_percentage, mc_error)
 % write_to_file writes the results of this script to a results.txt file
 
 % Input Vars
@@ -106,6 +113,6 @@ function write_to_file(output_name, model, percentage)
             model.Coefficients{'OverallPuttingAvg__OfPutts_', {'Estimate', 'SE'}});
     fprintf(fid, 'R-Squared: %f\n', model.Rsquared.Ordinary);
     fprintf(fid, 'Number of Data Points: %d', model.NumObservations);
-    fprintf(fid, '\n\n--- Monte Carlo Output ---\nPercent <= 270: %f', percentage);
+    fprintf(fid, '\n\n--- Monte Carlo Output ---\nEstimate: %f\nStandard Error: %f', mc_percentage, mc_error);
     
 end
