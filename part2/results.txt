@@ -1,8 +1,8 @@
 --- Regression Output ---
-Intercept (a): 46.439160 (Estimate), 0.776264 (SE)
-GIR Coefficient (b): 0.061975 (Estimate), 0.002028 (SE)
-Putt Coefficient (c): 0.729757 (Estimate), 0.025428 (SE)
-R-Squared: 0.500286
+Intercept (a): 58.746910 (Estimate), 0.437017 (SE)
+GIR Coefficient (b): -1.270477 (Estimate), 0.017303 (SE)
+Putt Coefficient (c): 0.946402 (Estimate), 0.015542 (SE)
+R-Squared: 0.826468
 Number of Data Points: 1440
 
 --- Monte Carlo Output ---

@@ -3,28 +3,25 @@
 %% Constants
 input_name = 'round-2014-small.txt';
 output_name = 'results.txt';
-modelspec = 'RoundScore ~ GIRRank + OverallPuttingAvg__OfPutts_';
-mc_column_name = 'RoundScore';
 mc_iters = 10000;
 mc_sample_size = 4;
 mc_threshold = 270;
 
 %% Read File
-T = file_to_table(input_name);
+[x,y] = file_to_matrices(input_name);
 
 %% Linear Regression
-model = linear_regression(T, modelspec);
+model = linear_regression(x, y);
 
 %% Monte Carlo
-vector = transpose(table2array(T(:, mc_column_name)));
-[percentage, error] = monte_carlo(vector, mc_iters, mc_sample_size, mc_threshold);
+[percentage, error] = monte_carlo(y, mc_iters, mc_sample_size, mc_threshold);
 
 %% Write Results To A File
 write_to_file(output_name, model, percentage, error);
 
 %% Functions
 
-function T = file_to_table(f_name)
+function [x, y] = file_to_matrices(f_name)
 % file_to_table reads in a semi-colon delimited file and converts it to a
 % table using the readtable function
 
@@ -32,25 +29,44 @@ function T = file_to_table(f_name)
 % f_name - String, name of file to import
 
 % Output Vars
-% T - table, with variable names from header row
+% x - Matrix, containing predictor values
+% y - Vector, containing dependent values
 
-    T = readtable(f_name, 'Delimiter', ';', 'ReadVariableNames', 1, 'ReadRowNames', 0);
+    fid = fopen(f_name);
+    fgetl(fid); % skip header
+    line = fgetl(fid);
+
+    x = [];
+    y = [];
+    while ischar(line)
+        A = textscan(line,'%s', 'delimiter',';');
+        score = str2double(A{:}{16});
+        gir = str2double(A{:}{80});
+        putt = str2double(A{:}{123});
+
+        x = [x; gir, putt];
+        y = [y; score];
+
+        line = fgetl(fid);
+    end
+    
+    fclose(fid);
 
 end
 
 
-function model = linear_regression(table, spec)
-% linear_regression runs a linear regression using the inputted table and 
-% model spec (which uses variable names from the table), returns the model
+function model = linear_regression(x, y)
+% linear_regression runs a linear regression using the inputted x features
+% and y values to predict, returns the model
 
 % Input Vars
-% table - Table with all data needed for regression
-% spec - String, representing the regression function
+% x - Matrix, containing predictor values
+% y - Vector, containing dependent values
 
 % Output Vars
 % model - LinearModel object, output of the fitlm function
 
-    model = fitlm(table,spec);
+    model = fitlm(x, y);
 
 end
 
@@ -108,9 +124,9 @@ function write_to_file(output_name, model, mc_percentage, mc_error)
     fprintf(fid, '--- Regression Output ---\nIntercept (a): %f (Estimate), %f (SE)\n', ...
             model.Coefficients{'(Intercept)', {'Estimate', 'SE'}});
     fprintf(fid, 'GIR Coefficient (b): %f (Estimate), %f (SE)\n', ...
-            model.Coefficients{'GIRRank', {'Estimate', 'SE'}});
+            model.Coefficients{'x1', {'Estimate', 'SE'}});
     fprintf(fid, 'Putt Coefficient (c): %f (Estimate), %f (SE)\n', ...
-            model.Coefficients{'OverallPuttingAvg__OfPutts_', {'Estimate', 'SE'}});
+            model.Coefficients{'x2', {'Estimate', 'SE'}});
     fprintf(fid, 'R-Squared: %f\n', model.Rsquared.Ordinary);
     fprintf(fid, 'Number of Data Points: %d', model.NumObservations);
     fprintf(fid, '\n\n--- Monte Carlo Output ---\nEstimate: %f\nStandard Error: %f', mc_percentage, mc_error);
